@@ -1,0 +1,48 @@
+:root {
+  --color-navbar: #1E293B;
+  --color-navbar-text: #F8FAFC;
+  --color-primary: #FF6F00;
+  --color-primary-hover: #E65100;
+  --color-bg: #F8FAFC;
+  --color-card: #FFFFFF;
+  --color-pendiente: #EF4444;
+  --color-en_preparacion: #F59E0B;
+  --color-listo: #10B981;
+  --color-finalizado: #6B7280;
+  --color-text-primary: #1E293B;
+  --color-text-secondary: #6B7280;
+  --color-border: #E2E8F0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+button {
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+input, select, textarea {
+  font-family: 'Inter', sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
