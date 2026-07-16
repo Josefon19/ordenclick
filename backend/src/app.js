@@ -18,7 +18,7 @@ app.use(express.json());
 
 // Asegurarse de montar las rutas de auth antes de las protegidas:
 app.use('/api/auth', authRoutes);
-app.use('/api/usuarios',  verificarToken, usuarioRoutes);
+app.use('/api/usuarios',  usuarioRoutes);
 app.use('/api/platillos', verificarToken, platilloRoutes);
 app.use('/api/ordenes',   verificarToken, ordenRoutes);
 app.use('/api/reportes',  verificarToken, reporteRoutes);

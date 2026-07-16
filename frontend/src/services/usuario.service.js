@@ -1,21 +1,13 @@
+// Servicio que consume los endpoints de usuarios
+
 import api from './api';
 
-export const getUsuarios = () => {
-  return api.get('/usuarios');
+const usuarioService = {
+  listar: () => api.get('/usuarios'),
+  obtener: (id) => api.get(`/usuarios/${id}`),
+  crear: (datos) => api.post('/usuarios', datos),
+  actualizar: (id, datos) => api.put(`/usuarios/${id}`, datos),
+  desactivar: (id) => api.patch(`/usuarios/${id}/desactivar`)
 };
 
-export const getUsuario = (id) => {
-  return api.get(`/usuarios/${id}`);
-};
-
-export const createUsuario = (usuario) => {
-  return api.post('/usuarios', usuario);
-};
-
-export const updateUsuario = (id, usuario) => {
-  return api.put(`/usuarios/${id}`, usuario);
-};
-
-export const deleteUsuario = (id) => {
-  return api.delete(`/usuarios/${id}`);
-};
+export default usuarioService;

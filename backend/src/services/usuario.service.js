@@ -1,43 +1,63 @@
-// Servicio de Usuario (Capa de lógica de negocio)
+// Capa 2 — Lógica de negocio de usuarios
+// Validaciones profundas y reglas del sistema
+
 const bcrypt = require('bcrypt');
 const usuarioRepository = require('../repositories/usuario.repository');
 
 const usuarioService = {
+
   listarTodos: async () => {
     return await usuarioRepository.listarTodos();
   },
 
-  buscarPorId: async (id) => {
-    return await usuarioRepository.buscarPorId(id);
+  obtenerPorId: async (id) => {
+    const usuario = await usuarioRepository.buscarPorId(id);
+    if (!usuario) throw new Error('Usuario no encontrado.');
+    return usuario;
   },
 
-  crear: async (usuarioData) => {
-    const existeUsuario = await usuarioRepository.buscarPorCorreo(usuarioData.correo);
-    if (existeUsuario) {
-      throw new Error('El correo ya está registrado.');
-    }
+  crear: async ({ nombre_completo, correo, password, rol }) => {
+    // Verificar que el correo no esté registrado
+    const existe = await usuarioRepository.buscarPorCorreo(correo);
+    if (existe) throw new Error('Ya existe un usuario con ese correo.');
 
-    const passwordHash = await bcrypt.hash(usuarioData.password, 10);
-    const usuario = await usuarioRepository.crear({
-      ...usuarioData,
-      password_hash: passwordHash
+    // Validar rol permitido
+    const rolesValidos = ['administrador', 'mesero', 'cocina'];
+    if (!rolesValidos.includes(rol)) throw new Error('Rol no válido.');
+
+    // Hashear contraseña antes de guardar
+    const password_hash = await bcrypt.hash(password, 10);
+
+    const nuevo = await usuarioRepository.crear({
+      nombre_completo,
+      correo,
+      password_hash,
+      rol,
+      activo: true
     });
 
-    // Eliminar el password_hash de la respuesta
-    const { password_hash, ...usuarioSinPassword } = usuario.toJSON();
-    return usuarioSinPassword;
+    // Nunca devolver el hash
+    const { password_hash: _, ...usuarioSinHash } = nuevo.toJSON();
+    return usuarioSinHash;
   },
 
-  actualizar: async (id, usuarioData) => {
-    if (usuarioData.password) {
-      usuarioData.password_hash = await bcrypt.hash(usuarioData.password, 10);
-      delete usuarioData.password;
+  actualizar: async (id, datos) => {
+    const usuario = await usuarioRepository.buscarPorId(id);
+    if (!usuario) throw new Error('Usuario no encontrado.');
+
+    // Si cambió el correo verificar que no esté en uso
+    if (datos.correo && datos.correo !== usuario.correo) {
+      const existe = await usuarioRepository.buscarPorCorreo(datos.correo);
+      if (existe) throw new Error('Ese correo ya está en uso.');
     }
-    return await usuarioRepository.actualizar(id, usuarioData);
+
+    await usuarioRepository.actualizar(id, datos);
   },
 
   desactivar: async (id) => {
-    return await usuarioRepository.desactivar(id);
+    const usuario = await usuarioRepository.buscarPorId(id);
+    if (!usuario) throw new Error('Usuario no encontrado.');
+    await usuarioRepository.desactivar(id);
   }
 };
 
