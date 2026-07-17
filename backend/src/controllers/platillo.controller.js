@@ -1,89 +1,75 @@
-// Controlador de Platillo (Capa de presentación)
+// Capa 1 — Controlador de platillos
+
 const platilloService = require('../services/platillo.service');
 
 const platilloController = {
-  findAll: async (req, res) => {
+
+  listar: async (req, res) => {
     try {
-      const platillos = await platilloService.listarTodos();
-      res.json({
-        ok: true,
-        data: platillos
-      });
+      const soloDisponibles = req.query.soloDisponibles === 'true';
+      const platillos = await platilloService.listarTodos(soloDisponibles);
+      return res.status(200).json({ ok: true, data: platillos });
     } catch (error) {
-      res.status(500).json({
-        ok: false,
-        mensaje: 'Error al obtener platillos.'
-      });
+      return res.status(500).json({ ok: false, mensaje: error.message });
     }
   },
 
-  findById: async (req, res) => {
+  obtener: async (req, res) => {
     try {
-      const platillo = await platilloService.buscarPorId(req.params.id);
-      if (!platillo) return res.status(404).json({
-        ok: false,
-        mensaje: 'Platillo no encontrado.'
+      const platillo = await platilloService.obtenerPorId(req.params.id);
+      return res.status(200).json({ ok: true, data: platillo });
+    } catch (error) {
+      return res.status(404).json({ ok: false, mensaje: error.message });
+    }
+  },
+
+  crear: async (req, res) => {
+    try {
+      const { nombre, descripcion, precio, categoria_id, disponible } = req.body;
+      if (!nombre || !precio || !categoria_id) {
+        return res.status(400).json({
+          ok: false,
+          mensaje: 'Nombre, precio y categoria son obligatorios.'
+        });
+      }
+      const nuevo = await platilloService.crear({
+        nombre, descripcion, precio, categoria_id, disponible
       });
-      res.json({
+      return res.status(201).json({
         ok: true,
+        mensaje: 'Platillo creado correctamente.',
+        data: nuevo
+      });
+    } catch (error) {
+      return res.status(400).json({ ok: false, mensaje: error.message });
+    }
+  },
+
+  actualizar: async (req, res) => {
+    try {
+      const { nombre, descripcion, precio, categoria_id } = req.body;
+      await platilloService.actualizar(req.params.id, {
+        nombre, descripcion, precio, categoria_id
+      });
+      return res.status(200).json({
+        ok: true,
+        mensaje: 'Platillo actualizado correctamente.'
+      });
+    } catch (error) {
+      return res.status(400).json({ ok: false, mensaje: error.message });
+    }
+  },
+
+  toggleDisponibilidad: async (req, res) => {
+    try {
+      const platillo = await platilloService.toggleDisponibilidad(req.params.id);
+      return res.status(200).json({
+        ok: true,
+        mensaje: `Platillo ${platillo.disponible ? 'activado' : 'desactivado'} correctamente.`,
         data: platillo
       });
     } catch (error) {
-      res.status(500).json({
-        ok: false,
-        mensaje: 'Error al obtener platillo.'
-      });
-    }
-  },
-
-  create: async (req, res) => {
-    try {
-      const platillo = await platilloService.crear(req.body);
-      res.status(201).json({
-        ok: true,
-        mensaje: 'Platillo creado exitosamente.',
-        data: platillo
-      });
-    } catch (error) {
-      res.status(400).json({
-        ok: false,
-        mensaje: 'Error al crear platillo.'
-      });
-    }
-  },
-
-  update: async (req, res) => {
-    try {
-      const platillo = await platilloService.actualizar(req.params.id, req.body);
-      if (!platillo) return res.status(404).json({
-        ok: false,
-        mensaje: 'Platillo no encontrado.'
-      });
-      res.json({
-        ok: true,
-        mensaje: 'Platillo actualizado exitosamente.',
-        data: platillo
-      });
-    } catch (error) {
-      res.status(400).json({
-        ok: false,
-        mensaje: 'Error al actualizar platillo.'
-      });
-    }
-  },
-
-  delete: async (req, res) => {
-    try {
-      await platilloService.desactivar(req.params.id);
-      res.json({
-        ok: true,
-        mensaje: 'Platillo desactivado correctamente.'
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        mensaje: 'Error al desactivar platillo.'
-      });
+      return res.status(400).json({ ok: false, mensaje: error.message });
     }
   }
 };
