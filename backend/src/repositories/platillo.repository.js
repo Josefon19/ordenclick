@@ -1,33 +1,38 @@
-// Repositorio de Platillo (Capa de acceso a datos)
+// Capa 3 — Acceso a datos de platillos
+
 const { Platillo, Categoria } = require('../models');
 
 const platilloRepository = {
-  listarTodos: async () => {
+
+  listarTodos: async (soloDisponibles) => {
+    const where = soloDisponibles ? { disponible: true } : {};
     return await Platillo.findAll({
-      include: [{ model: Categoria, as: 'categoria' }]
+      where,
+      include: [{
+        model: Categoria,
+        as: 'categoria',
+        attributes: ['id', 'nombre']
+      }],
+      order: [['categoria_id', 'ASC'], ['nombre', 'ASC']]
     });
   },
 
   buscarPorId: async (id) => {
     return await Platillo.findByPk(id, {
-      include: [{ model: Categoria, as: 'categoria' }]
+      include: [{
+        model: Categoria,
+        as: 'categoria',
+        attributes: ['id', 'nombre']
+      }]
     });
   },
 
-  crear: async (platilloData) => {
-    return await Platillo.create(platilloData);
+  crear: async (datos) => {
+    return await Platillo.create(datos);
   },
 
-  actualizar: async (id, platilloData) => {
-    const platillo = await Platillo.findByPk(id);
-    if (!platillo) return null;
-    return await platillo.update(platilloData);
-  },
-
-  desactivar: async (id) => {
-    const platillo = await Platillo.findByPk(id);
-    if (!platillo) return null;
-    return await platillo.update({ disponible: false });
+  actualizar: async (id, datos) => {
+    return await Platillo.update(datos, { where: { id } });
   }
 };
 
