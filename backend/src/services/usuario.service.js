@@ -58,6 +58,12 @@ const usuarioService = {
     const usuario = await usuarioRepository.buscarPorId(id);
     if (!usuario) throw new Error('Usuario no encontrado.');
     await usuarioRepository.desactivar(id);
+  },
+
+  activar: async (id) => {
+    const usuario = await usuarioRepository.buscarPorId(id);
+    if (!usuario) throw new Error('Usuario no encontrado.');
+    await usuarioRepository.activar(id);
   }
 };
 

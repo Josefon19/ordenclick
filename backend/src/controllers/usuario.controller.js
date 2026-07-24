@@ -74,6 +74,19 @@ const usuarioController = {
     } catch (error) {
       return res.status(400).json({ ok: false, mensaje: error.message });
     }
+  },
+
+  // PATCH /api/usuarios/:id/activar — activar cuenta
+  activar: async (req, res) => {
+    try {
+      await usuarioService.activar(req.params.id);
+      return res.status(200).json({
+        ok: true,
+        mensaje: 'Usuario activado correctamente.'
+      });
+    } catch (error) {
+      return res.status(400).json({ ok: false, mensaje: error.message });
+    }
   }
 };
 

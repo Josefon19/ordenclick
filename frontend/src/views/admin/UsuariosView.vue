@@ -59,11 +59,10 @@
                       Editar
                     </button>
                     <button
-                      v-if="usuario.activo"
-                      class="btn-action btn-delete"
-                      @click="confirmarDesactivar(usuario)"
+                      :class="['btn-action', usuario.activo ? 'btn-delete' : 'btn-activate']"
+                      @click="usuario.activo ? confirmarDesactivar(usuario) : confirmarActivar(usuario)"
                     >
-                      Desactivar
+                      {{ usuario.activo ? 'Desactivar' : 'Activar' }}
                     </button>
                   </td>
                 </tr>
@@ -300,6 +299,18 @@ const confirmarDesactivar = async (usuario) => {
     mostrarMensaje('Error al desactivar el usuario.', 'error');
   }
 };
+
+// Confirmar y activar usuario
+const confirmarActivar = async (usuario) => {
+  if (!confirm(`¿Activar la cuenta de ${usuario.nombre_completo}?`)) return;
+  try {
+    await usuarioService.activar(usuario.id);
+    mostrarMensaje('Usuario activado correctamente.');
+    await cargarUsuarios();
+  } catch (error) {
+    mostrarMensaje('Error al activar el usuario.', 'error');
+  }
+};
 </script>
 
 <style scoped>
@@ -441,6 +452,10 @@ const confirmarDesactivar = async (usuario) => {
 .btn-delete {
   background-color: #FEF2F2;
   color: var(--color-pendiente);
+}
+.btn-activate {
+  background-color: #ECFDF5;
+  color: var(--color-listo);
 }
 
 /* Badges de rol y estado */

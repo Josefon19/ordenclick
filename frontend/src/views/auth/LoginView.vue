@@ -104,6 +104,20 @@ const errores = reactive({
 const error = ref('')        // Error global del servidor
 const cargando = ref(false)  // Estado del botón
 const mostrarPassword = ref(false)
+let errorTimeout = null
+
+const mostrarErrorTemporal = (mensaje) => {
+  error.value = mensaje
+
+  if (errorTimeout) {
+    clearTimeout(errorTimeout)
+  }
+
+  errorTimeout = setTimeout(() => {
+    error.value = ''
+    errorTimeout = null
+  }, 4500)
+}
 
 // Validación del formulario antes de enviar
 const validarFormulario = () => {
@@ -152,7 +166,7 @@ const handleLogin = async () => {
     redirigirPorRol(authStore.rolUsuario)
   } catch (err) {
     // Mostrar mensaje de error del servidor
-    error.value = err.message || 'Credenciales incorrectas. Intenta de nuevo.'
+    mostrarErrorTemporal(err.message || 'Credenciales incorrectas. Intenta de nuevo.')
   } finally {
     cargando.value = false
   }

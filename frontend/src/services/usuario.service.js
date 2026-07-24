@@ -7,7 +7,8 @@ const usuarioService = {
   obtener: (id) => api.get(`/usuarios/${id}`),
   crear: (datos) => api.post('/usuarios', datos),
   actualizar: (id, datos) => api.put(`/usuarios/${id}`, datos),
-  desactivar: (id) => api.patch(`/usuarios/${id}/desactivar`)
+  desactivar: (id) => api.patch(`/usuarios/${id}/desactivar`),
+  activar: (id) => api.patch(`/usuarios/${id}/activar`)
 };
 
 export default usuarioService;

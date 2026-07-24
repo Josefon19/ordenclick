@@ -5,8 +5,14 @@ import api from './api'
 const authService = {
   // POST /api/auth/login
   login: async (credenciales) => {
-    const { data } = await api.post('/auth/login', credenciales)
-    return data // { ok, mensaje, data: { token, usuario } }
+    try {
+      const { data } = await api.post('/auth/login', credenciales)
+      return data // { ok, mensaje, data: { token, usuario } }
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.mensaje || 'Credenciales incorrectas. Intenta de nuevo.'
+      )
+    }
   },
 
   // POST /api/auth/logout
