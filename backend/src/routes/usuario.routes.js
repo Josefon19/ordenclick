@@ -15,5 +15,6 @@ router.get('/:id',     usuarioController.obtener);   // GET    /api/usuarios/:id
 router.post('/',       usuarioController.crear);     // POST   /api/usuarios
 router.put('/:id',     usuarioController.actualizar);// PUT    /api/usuarios/:id
 router.patch('/:id/desactivar', usuarioController.desactivar); // PATCH /api/usuarios/:id/desactivar
+router.patch('/:id/activar', usuarioController.activar); // PATCH /api/usuarios/:id/activar
 
 module.exports = router;
