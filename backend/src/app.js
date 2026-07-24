@@ -22,7 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/platillos', platilloRoutes);
 app.use('/api/categorias', categoriaRoutes);
-app.use('/api/ordenes', verificarToken, ordenRoutes);
+app.use('/api/ordenes', ordenRoutes);
 app.use('/api/reportes', verificarToken, reporteRoutes);
 
 app.use((err, req, res, next) => {
