@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth.routes');
 const usuarioRoutes = require('./routes/usuario.routes');
 const platilloRoutes = require('./routes/platillo.routes');
 const categoriaRoutes = require('./routes/categoria.routes');
+const mesaRoutes = require('./routes/mesa.routes');
 const ordenRoutes = require('./routes/orden.routes');
 const reporteRoutes = require('./routes/reporte.routes');
 const { verificarToken } = require('./middlewares/auth.middleware');
@@ -22,6 +23,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/platillos', platilloRoutes);
 app.use('/api/categorias', categoriaRoutes);
+app.use('/api/mesas', mesaRoutes);
 app.use('/api/ordenes', ordenRoutes);
 app.use('/api/reportes', verificarToken, reporteRoutes);
 
