@@ -22,6 +22,22 @@
             {{ mensaje.texto }}
           </div>
 
+          <div class="filtros">
+            <input
+              v-model="busqueda"
+              class="search-input"
+              placeholder="Buscar por nombre o correo..."
+            >
+            <button
+              v-for="rol in rolesFiltro"
+              :key="rol"
+              :class="['btn-filtro', filtroRol === rol ? 'btn-filtro--active' : '']"
+              @click="filtroRol = rol"
+            >
+              {{ rol }}
+            </button>
+          </div>
+
           <!-- Tabla de usuarios -->
           <div class="card">
             <table class="table">
@@ -38,10 +54,10 @@
                 <tr v-if="cargando">
                   <td colspan="5" class="table-empty">Cargando usuarios...</td>
                 </tr>
-                <tr v-else-if="usuarios.length === 0">
+                <tr v-else-if="usuariosFiltrados.length === 0">
                   <td colspan="5" class="table-empty">No hay usuarios registrados.</td>
                 </tr>
-                <tr v-for="usuario in usuarios" :key="usuario.id">
+                <tr v-for="usuario in usuariosFiltrados" :key="usuario.id">
                   <td>{{ usuario.nombre_completo }}</td>
                   <td>{{ usuario.correo }}</td>
                   <td>
@@ -133,7 +149,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import usuarioService from '../../services/usuario.service';
 import AppNavbar from '../../components/AppNavbar.vue';
 import AppSidebar from '../../components/AppSidebar.vue';
@@ -141,7 +157,10 @@ import AppSidebar from '../../components/AppSidebar.vue';
 // Estado principal
 const usuarios = ref([]);
 const cargando = ref(false);
+const busqueda = ref('');
+const filtroRol = ref('Todos');
 const mensaje = reactive({ texto: '', tipo: '' });
+const rolesFiltro = ['Todos', 'administrador', 'mesero', 'cocina'];
 
 // Estado del modal
 const modal = reactive({
@@ -166,6 +185,19 @@ const errores = reactive({
   correo: '',
   password: '',
   rol: ''
+});
+
+const usuariosFiltrados = computed(() => {
+  const termino = busqueda.value.trim().toLowerCase();
+
+  return usuarios.value.filter((usuario) => {
+    const coincideBusqueda = !termino
+      || usuario.nombre_completo?.toLowerCase().includes(termino)
+      || usuario.correo?.toLowerCase().includes(termino);
+    const coincideRol = filtroRol.value === 'Todos' || usuario.rol === filtroRol.value;
+
+    return coincideBusqueda && coincideRol;
+  });
 });
 
 // Cargar usuarios al montar la vista
@@ -344,6 +376,56 @@ const confirmarActivar = async (usuario) => {
   font-size: 13px;
   color: var(--color-text-secondary);
   margin: 0;
+}
+
+.filtros {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-input {
+  min-width: 260px;
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: var(--color-text-primary);
+  background: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--color-primary);
+}
+
+.btn-filtro {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+  transition: all 0.2s;
+}
+
+.btn-filtro:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-filtro--active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
 }
 
 /* Botones */
