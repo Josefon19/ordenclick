@@ -2,7 +2,6 @@
   <div class="layout">
     <AppNavbar />
     <div class="layout-content">
-      <AppSidebar />
       <main class="main-content">
         <div class="mesero-page">
 
