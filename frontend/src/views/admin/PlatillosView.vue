@@ -18,6 +18,11 @@
           </div>
 
           <div class="filtros">
+            <input
+              v-model="busqueda"
+              class="search-input"
+              placeholder="Buscar por nombre o descripción..."
+            >
             <button
               v-for="cat in ['Todos', ...categorias.map(c => c.nombre)]"
               :key="cat"
@@ -155,6 +160,7 @@ import AppSidebar from '../../components/AppSidebar.vue';
 const platillos = ref([]);
 const categorias = ref([]);
 const cargando = ref(false);
+const busqueda = ref('');
 const filtroActivo = ref('Todos');
 const mensaje = reactive({ texto: '', tipo: '' });
 const modal = reactive({
@@ -177,8 +183,17 @@ const errores = reactive({
 });
 
 const platillosFiltrados = computed(() => {
-  if (filtroActivo.value === 'Todos') return platillos.value;
-  return platillos.value.filter((p) => p.categoria?.nombre === filtroActivo.value);
+  const termino = busqueda.value.trim().toLowerCase();
+
+  return platillos.value.filter((platillo) => {
+    const coincideCategoria = filtroActivo.value === 'Todos'
+      || platillo.categoria?.nombre === filtroActivo.value;
+    const coincideBusqueda = !termino
+      || platillo.nombre?.toLowerCase().includes(termino)
+      || platillo.descripcion?.toLowerCase().includes(termino);
+
+    return coincideCategoria && coincideBusqueda;
+  });
 });
 
 onMounted(async () => {
@@ -334,6 +349,25 @@ const cambiarDisponibilidad = async (platillo) => {
   gap: 8px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-input {
+  min-width: 280px;
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: var(--color-text-primary);
+  background: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--color-primary);
 }
 
 .btn-filtro {
