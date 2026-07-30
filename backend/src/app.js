@@ -11,7 +11,6 @@ const categoriaRoutes = require('./routes/categoria.routes');
 const mesaRoutes = require('./routes/mesa.routes');
 const ordenRoutes = require('./routes/orden.routes');
 const reporteRoutes = require('./routes/reporte.routes');
-const { verificarToken } = require('./middlewares/auth.middleware');
 
 const app = express();
 
@@ -34,6 +33,6 @@ app.use((err, req, res, next) => {
 
 conectarDB().then(() => {
   app.listen(process.env.PORT, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${process.env.PORT}`);
+    console.log(`Servidor corriendo en http://localhost:${process.env.PORT}`);
   });
 });
