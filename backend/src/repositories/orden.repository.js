@@ -1,36 +1,49 @@
-// Repositorio de Orden (Capa de acceso a datos)
-const { Orden, Mesa, Usuario, OrdenDetalle, Platillo } = require('../models');
+// Capa 3 — Acceso a datos de órdenes
+const { Orden, OrdenDetalle, Platillo, Mesa, Usuario } = require('../models');
+const { Op } = require('sequelize');
+
+const include = [
+  { model: Mesa, as: 'mesa', attributes: ['id', 'numero'] },
+  { model: Usuario, as: 'mesero', attributes: ['id', 'nombre_completo'] },
+  {
+    model: OrdenDetalle,
+    as: 'detalles',
+    include: [{ model: Platillo, as: 'platillo', attributes: ['id', 'nombre', 'precio'] }]
+  }
+];
 
 const ordenRepository = {
-  listarTodos: async () => {
+
+  listar: async (meseroId) => {
+    const where = meseroId ? { mesero_id: meseroId } : {};
     return await Orden.findAll({
-      include: [
-        { model: Mesa, as: 'mesa' },
-        { model: Usuario, as: 'mesero' },
-        { model: OrdenDetalle, as: 'detalles', include: [{ model: Platillo, as: 'platillo' }] }
-      ],
+      where,
+      include,
       order: [['created_at', 'DESC']]
     });
   },
 
-  buscarPorId: async (id) => {
-    return await Orden.findByPk(id, {
-      include: [
-        { model: Mesa, as: 'mesa' },
-        { model: Usuario, as: 'mesero' },
-        { model: OrdenDetalle, as: 'detalles', include: [{ model: Platillo, as: 'platillo' }] }
-      ]
+  listarPorEstados: async (estados) => {
+    return await Orden.findAll({
+      where: { estado: { [Op.in]: estados } },
+      include,
+      order: [['created_at', 'ASC']]
     });
   },
 
-  crear: async (ordenData, transaction) => {
-    return await Orden.create(ordenData, { transaction });
+  buscarPorId: async (id) => {
+    return await Orden.findByPk(id, { include });
   },
 
-  actualizar: async (id, ordenData) => {
-    const orden = await Orden.findByPk(id);
-    if (!orden) return null;
-    return await orden.update(ordenData);
+  crear: async (datos, transaction = null) => {
+    const options = transaction ? { transaction } : {};
+    return await Orden.create(datos, options);
+  },
+
+  actualizarEstado: async (id, estado, metodo_pago = null) => {
+    const datos = { estado };
+    if (metodo_pago) datos.metodo_pago = metodo_pago;
+    return await Orden.update(datos, { where: { id } });
   }
 };
 

@@ -1,22 +1,14 @@
-// Repositorio de OrdenDetalle (Capa de acceso a datos)
-const { OrdenDetalle, Platillo } = require('../models');
+// Capa 3 — Acceso a datos de detalles de órdenes
+const { OrdenDetalle } = require('../models');
 
 const ordenDetalleRepository = {
-  buscarPorOrdenId: async (ordenId) => {
-    return await OrdenDetalle.findAll({
-      where: { orden_id: ordenId },
-      include: [{ model: Platillo, as: 'platillo' }]
-    });
+
+  crearMultiples: async (detalles) => {
+    return await OrdenDetalle.bulkCreate(detalles);
   },
 
-  crear: async (detalleData, transaction) => {
-    return await OrdenDetalle.create(detalleData, { transaction });
-  },
-
-  actualizar: async (id, detalleData) => {
-    const detalle = await OrdenDetalle.findByPk(id);
-    if (!detalle) return null;
-    return await detalle.update(detalleData);
+  listarPorOrden: async (orden_id) => {
+    return await OrdenDetalle.findAll({ where: { orden_id } });
   }
 };
 

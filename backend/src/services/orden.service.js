@@ -1,46 +1,100 @@
-// Servicio de Orden (Capa de lógica de negocio)
 const ordenRepository = require('../repositories/orden.repository');
 const ordenDetalleRepository = require('../repositories/ordenDetalle.repository');
-const { sequelize } = require('../config/database');
+const platilloRepository = require('../repositories/platillo.repository');
+
+const transicionesValidas = {
+  mesero: {
+    pendiente: ['cancelada'],
+    listo: ['entregada'],
+    entregada: ['pagada']
+  },
+  cocina: {
+    pendiente: ['en_preparacion'],
+    en_preparacion: ['listo']
+  },
+  administrador: {
+    pendiente: ['en_preparacion', 'cancelada'],
+    en_preparacion: ['listo'],
+    listo: ['entregada'],
+    entregada: ['pagada']
+  }
+};
 
 const ordenService = {
-  listarTodos: async () => {
-    return await ordenRepository.listarTodos();
+
+  listar: async (meseroId) => {
+    return await ordenRepository.listar(meseroId);
   },
 
-  buscarPorId: async (id) => {
-    return await ordenRepository.buscarPorId(id);
+  listarActivas: async () => {
+    return await ordenRepository.listarPorEstados(['pendiente', 'en_preparacion']);
   },
 
-  crear: async (ordenData, detalles) => {
-    const transaction = await sequelize.transaction();
-    try {
-      const total = detalles.reduce((sum, det) => sum + (det.precio_unitario * det.cantidad), 0);
-      const orden = await ordenRepository.crear({ ...ordenData, total }, transaction);
+  obtenerPorId: async (id) => {
+    const orden = await ordenRepository.buscarPorId(id);
+    if (!orden) throw new Error('Orden no encontrada.');
+    return orden;
+  },
 
-      for (const detalle of detalles) {
-        const subtotal = detalle.precio_unitario * detalle.cantidad;
-        await ordenDetalleRepository.crear({
-          ...detalle,
-          orden_id: orden.id,
-          subtotal
-        }, transaction);
-      }
+  crear: async ({ mesa_id, mesero_id, items, notas_generales }) => {
+    let total = 0;
+    const detalles = [];
 
-      await transaction.commit();
-      return await ordenRepository.buscarPorId(orden.id);
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
+    for (const item of items) {
+      const platillo = await platilloRepository.buscarPorId(item.platillo_id);
+      if (!platillo) throw new Error(`Platillo ${item.platillo_id} no encontrado.`);
+      if (!platillo.disponible) throw new Error(`"${platillo.nombre}" no está disponible.`);
+      if (!item.cantidad || item.cantidad < 1) throw new Error('La cantidad debe ser mayor a 0.');
+
+      const subtotal = Number(platillo.precio) * item.cantidad;
+      total += subtotal;
+
+      detalles.push({
+        platillo_id: item.platillo_id,
+        cantidad: item.cantidad,
+        precio_unitario: platillo.precio,
+        subtotal,
+        notas: item.notas || null,
+        estado: 'pendiente'
+      });
     }
+
+    const orden = await ordenRepository.crear({
+      mesa_id,
+      mesero_id,
+      estado: 'pendiente',
+      total,
+      notas_generales: notas_generales || null
+    });
+
+    await ordenDetalleRepository.crearMultiples(
+      detalles.map((detalle) => ({ ...detalle, orden_id: orden.id }))
+    );
+
+    return ordenRepository.buscarPorId(orden.id);
   },
 
-  actualizar: async (id, ordenData) => {
-    return await ordenRepository.actualizar(id, ordenData);
+  actualizarEstado: async (id, nuevoEstado, rol) => {
+    const orden = await ordenRepository.buscarPorId(id);
+    if (!orden) throw new Error('Orden no encontrada.');
+
+    const permitidos = transicionesValidas[rol]?.[orden.estado] || [];
+    if (!permitidos.includes(nuevoEstado)) {
+      throw new Error(`No puedes cambiar de "${orden.estado}" a "${nuevoEstado}".`);
+    }
+    await ordenRepository.actualizarEstado(id, nuevoEstado);
   },
 
-  actualizarDetalle: async (id, detalleData) => {
-    return await ordenDetalleRepository.actualizar(id, detalleData);
+  pagar: async (id, metodo_pago) => {
+    const orden = await ordenRepository.buscarPorId(id);
+    if (!orden) throw new Error('Orden no encontrada.');
+    if (orden.estado !== 'entregada') {
+      throw new Error('Solo se pueden pagar órdenes en estado "Entregada".');
+    }
+    if (!['efectivo', 'tarjeta'].includes(metodo_pago)) {
+      throw new Error('Método de pago inválido.');
+    }
+    await ordenRepository.actualizarEstado(id, 'pagada', metodo_pago);
   }
 };
 
