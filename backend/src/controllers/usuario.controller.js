@@ -1,89 +1,91 @@
-// Controlador de Usuario (Capa de presentación)
+// Capa 1 — Controlador de usuarios
+// Recibe HTTP, delega al service, responde JSON
+
 const usuarioService = require('../services/usuario.service');
 
 const usuarioController = {
-  findAll: async (req, res) => {
+
+  // GET /api/usuarios — listar todos
+  listar: async (req, res) => {
     try {
       const usuarios = await usuarioService.listarTodos();
-      res.json({
-        ok: true,
-        data: usuarios
-      });
+      return res.status(200).json({ ok: true, data: usuarios });
     } catch (error) {
-      res.status(500).json({
-        ok: false,
-        mensaje: 'Error al obtener usuarios.'
-      });
+      return res.status(500).json({ ok: false, mensaje: error.message });
     }
   },
 
-  findById: async (req, res) => {
+  // GET /api/usuarios/:id — obtener uno
+  obtener: async (req, res) => {
     try {
-      const usuario = await usuarioService.buscarPorId(req.params.id);
-      if (!usuario) return res.status(404).json({
-        ok: false,
-        mensaje: 'Usuario no encontrado.'
-      });
-      res.json({
-        ok: true,
-        data: usuario
-      });
+      const usuario = await usuarioService.obtenerPorId(req.params.id);
+      return res.status(200).json({ ok: true, data: usuario });
     } catch (error) {
-      res.status(500).json({
-        ok: false,
-        mensaje: 'Error al obtener usuario.'
-      });
+      return res.status(404).json({ ok: false, mensaje: error.message });
     }
   },
 
-  create: async (req, res) => {
+  // POST /api/usuarios — crear nuevo
+  crear: async (req, res) => {
     try {
-      const usuario = await usuarioService.crear(req.body);
-      res.status(201).json({
+      const { nombre_completo, correo, password, rol } = req.body;
+
+      // Validación de campos obligatorios
+      if (!nombre_completo || !correo || !password || !rol) {
+        return res.status(400).json({
+          ok: false,
+          mensaje: 'Todos los campos son obligatorios.'
+        });
+      }
+
+      const nuevo = await usuarioService.crear({ nombre_completo, correo, password, rol });
+      return res.status(201).json({
         ok: true,
-        mensaje: 'Usuario creado exitosamente.',
-        data: usuario
+        mensaje: 'Usuario creado correctamente.',
+        data: nuevo
       });
     } catch (error) {
-      res.status(400).json({
-        ok: false,
-        mensaje: error.message || 'Error al crear usuario.'
-      });
+      return res.status(400).json({ ok: false, mensaje: error.message });
     }
   },
 
-  update: async (req, res) => {
+  // PUT /api/usuarios/:id — editar
+  actualizar: async (req, res) => {
     try {
-      const usuario = await usuarioService.actualizar(req.params.id, req.body);
-      if (!usuario) return res.status(404).json({
-        ok: false,
-        mensaje: 'Usuario no encontrado.'
-      });
-      res.json({
+      const { nombre_completo, correo, rol } = req.body;
+      await usuarioService.actualizar(req.params.id, { nombre_completo, correo, rol });
+      return res.status(200).json({
         ok: true,
-        mensaje: 'Usuario actualizado exitosamente.',
-        data: usuario
+        mensaje: 'Usuario actualizado correctamente.'
       });
     } catch (error) {
-      res.status(400).json({
-        ok: false,
-        mensaje: 'Error al actualizar usuario.'
-      });
+      return res.status(400).json({ ok: false, mensaje: error.message });
     }
   },
 
-  delete: async (req, res) => {
+  // PATCH /api/usuarios/:id/desactivar — desactivar cuenta
+  desactivar: async (req, res) => {
     try {
       await usuarioService.desactivar(req.params.id);
-      res.json({
+      return res.status(200).json({
         ok: true,
         mensaje: 'Usuario desactivado correctamente.'
       });
     } catch (error) {
-      res.status(500).json({
-        ok: false,
-        mensaje: 'Error al desactivar usuario.'
+      return res.status(400).json({ ok: false, mensaje: error.message });
+    }
+  },
+
+  // PATCH /api/usuarios/:id/activar — activar cuenta
+  activar: async (req, res) => {
+    try {
+      await usuarioService.activar(req.params.id);
+      return res.status(200).json({
+        ok: true,
+        mensaje: 'Usuario activado correctamente.'
       });
+    } catch (error) {
+      return res.status(400).json({ ok: false, mensaje: error.message });
     }
   }
 };

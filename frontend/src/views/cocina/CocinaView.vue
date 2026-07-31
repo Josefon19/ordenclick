@@ -2,118 +2,119 @@
   <div class="cocina-view">
     <AppNavbar />
     <div class="cocina-page">
+    
 
-      <!-- Header -->
-      <div class="cocina-header">
-        <div>
-          <h1 class="cocina-title">Vista de Cocina</h1>
-          <p class="cocina-subtitle">
-            Órdenes activas: <strong>{{ ordenes.length }}</strong>
-          </p>
-        </div>
-        <div class="header-acciones">
-          <!-- Contador regresivo del refresco automático -->
-          <span class="contador">
-            <v-icon name="md-refresh" class="inline-icon" />
-            Actualizando en {{ contador }}s
+    <!-- Header -->
+    <div class="cocina-header">
+      <div>
+        <h1 class="cocina-title">Vista de Cocina</h1>
+        <p class="cocina-subtitle">
+          Órdenes activas: <strong>{{ ordenes.length }}</strong>
+        </p>
+      </div>
+      <div class="header-acciones">
+        <!-- Contador regresivo del refresco automático -->
+        <span class="contador">
+          <v-icon name="md-refresh" class="inline-icon" />
+          Actualizando en {{ contador }}s
+        </span>
+        <button class="btn-refrescar" @click="refrescar">
+          Actualizar ahora
+        </button>
+      </div>
+    </div>
+
+    <!-- Alerta global -->
+    <div v-if="mensaje.texto" :class="['alert', `alert-${mensaje.tipo}`]">
+      {{ mensaje.texto }}
+    </div>
+
+    <!-- Estado de carga -->
+    <div v-if="cargando" class="loading-text">Cargando órdenes...</div>
+
+    <!-- Sin órdenes -->
+    <div v-else-if="ordenes.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <v-icon name="md-restaurant" />
+      </div>
+      <p class="empty-title">Sin órdenes activas</p>
+      <p class="empty-sub">Las nuevas órdenes aparecerán aquí automáticamente</p>
+    </div>
+
+    <!-- Grid de tarjetas de órdenes -->
+    <div v-else class="ordenes-grid">
+      <div
+        v-for="orden in ordenes"
+        :key="orden.id"
+        :class="['orden-card', `card-${orden.estado}`]"
+      >
+        <!-- Header de tarjeta -->
+        <div class="card-header">
+          <div class="card-header-left">
+            <span class="card-num">#{{ orden.id }}</span>
+            <span class="card-mesa">Mesa {{ orden.mesa?.numero }}</span>
+          </div>
+          <span :class="['badge-estado', `estado-${orden.estado}`]">
+            {{ orden.estado === 'en_preparacion' ? 'En preparación' : 'Pendiente' }}
           </span>
-          <button class="btn-refrescar" @click="refrescar">
-            Actualizar ahora
-          </button>
         </div>
-      </div>
 
-      <!-- Alerta global -->
-      <div v-if="mensaje.texto" :class="['alert', `alert-${mensaje.tipo}`]">
-        {{ mensaje.texto }}
-      </div>
-
-      <!-- Estado de carga -->
-      <div v-if="cargando" class="loading-text">Cargando órdenes...</div>
-
-      <!-- Sin órdenes -->
-      <div v-else-if="ordenes.length === 0" class="empty-state">
-        <div class="empty-icon">
-          <v-icon name="md-restaurant" />
+        <!-- Hora de la orden -->
+        <div class="card-hora">
+          <v-icon name="md-accesstime" class="inline-icon" />
+          {{ formatearHora(orden) }}
+          <span class="card-tiempo">{{ tiempoTranscurrido(orden) }}</span>
         </div>
-        <p class="empty-title">Sin órdenes activas</p>
-        <p class="empty-sub">Las nuevas órdenes aparecerán aquí automáticamente</p>
-      </div>
 
-      <!-- Grid de tarjetas de órdenes -->
-      <div v-else class="ordenes-grid">
-        <div
-          v-for="orden in ordenes"
-          :key="orden.id"
-          :class="['orden-card', `card-${orden.estado}`]"
-        >
-          <!-- Header de tarjeta -->
-          <div class="card-header">
-            <div class="card-header-left">
-              <span class="card-num">#{{ orden.id }}</span>
-              <span class="card-mesa">Mesa {{ orden.mesa?.numero }}</span>
-            </div>
-            <span :class="['badge-estado', `estado-${orden.estado}`]">
-              {{ orden.estado === 'en_preparacion' ? 'En preparación' : 'Pendiente' }}
+        <!-- Lista de platillos -->
+        <div class="card-items">
+          <div
+            v-for="det in orden.detalles"
+            :key="det.id"
+            class="card-item"
+          >
+            <span class="item-cantidad">x{{ det.cantidad }}</span>
+            <span class="item-nombre">{{ det.platillo?.nombre }}</span>
+            <span v-if="det.notas" class="item-nota">
+              <v-icon name="md-notes" class="inline-icon" />
+              {{ det.notas }}
             </span>
           </div>
-
-          <!-- Hora de la orden -->
-          <div class="card-hora">
-            <v-icon name="md-accesstime" class="inline-icon" />
-            {{ formatearHora(orden) }}
-            <span class="card-tiempo">{{ tiempoTranscurrido(orden) }}</span>
-          </div>
-
-          <!-- Lista de platillos -->
-          <div class="card-items">
-            <div
-              v-for="det in orden.detalles"
-              :key="det.id"
-              class="card-item"
-            >
-              <span class="item-cantidad">x{{ det.cantidad }}</span>
-              <span class="item-nombre">{{ det.platillo?.nombre }}</span>
-              <span v-if="det.notas" class="item-nota">
-                <v-icon name="md-notes" class="inline-icon" />
-                {{ det.notas }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Notas generales -->
-          <div v-if="orden.notas_generales" class="card-notas">
-            <span class="notas-label">Nota mesa:</span>
-            {{ orden.notas_generales }}
-          </div>
-
-          <!-- Mesero asignado -->
-          <div class="card-mesero">
-            <v-icon name="md-person" class="inline-icon" />
-            {{ orden.mesero?.nombre_completo }}
-          </div>
-
-          <!-- Botones de acción -->
-          <div class="card-acciones">
-            <button
-              v-if="orden.estado === 'pendiente'"
-              class="btn-preparar"
-              @click="cambiarEstado(orden.id, 'en_preparacion')"
-            >
-              Iniciar preparación
-            </button>
-            <button
-              v-if="orden.estado === 'en_preparacion'"
-              class="btn-listo"
-              @click="cambiarEstado(orden.id, 'listo')"
-            >
-              <v-icon name="md-done" class="inline-icon" />
-              Marcar como listo
-            </button>
-          </div>
-
         </div>
+
+        <!-- Notas generales -->
+        <div v-if="orden.notas_generales" class="card-notas">
+          <span class="notas-label">Nota mesa:</span>
+          {{ orden.notas_generales }}
+        </div>
+
+        <!-- Mesero asignado -->
+        <div class="card-mesero">
+          <v-icon name="md-person" class="inline-icon" />
+          {{ orden.mesero?.nombre_completo }}
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="card-acciones">
+          <button
+            v-if="orden.estado === 'pendiente'"
+            class="btn-preparar"
+            @click="cambiarEstado(orden.id, 'en_preparacion')"
+          >
+            Iniciar preparación
+          </button>
+          <button
+            v-if="orden.estado === 'en_preparacion'"
+            class="btn-listo"
+            @click="cambiarEstado(orden.id, 'listo')"
+          >
+            <v-icon name="md-done" class="inline-icon" />
+            Marcar como listo
+          </button>
+        </div>
+
       </div>
+    </div>
 
     </div>
   </div>
@@ -156,17 +157,20 @@ const cargarOrdenes = async () => {
 };
 
 const refrescar = async () => {
+  // Resetear contador y recargar
   contador.value = 30;
   await cargarOrdenes();
 };
 
 // Iniciar refresco automático cada 30 segundos
 const iniciarRefresco = () => {
+  // Countdown visual cada segundo
   intervaloContador = setInterval(() => {
     contador.value--;
     if (contador.value <= 0) contador.value = 30;
   }, 1000);
 
+  // Recarga real cada 30 segundos
   intervaloRefresco = setInterval(async () => {
     contador.value = 30;
     await cargarOrdenes();
@@ -245,22 +249,26 @@ const tiempoTranscurrido = (orden) => {
   align-items: flex-start;
   margin-bottom: 24px;
 }
+
 .cocina-title {
   font-size: 24px;
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0 0 4px;
 }
+
 .cocina-subtitle {
   font-size: 14px;
   color: var(--color-text-secondary);
   margin: 0;
 }
+
 .header-acciones {
   display: flex;
   align-items: center;
   gap: 12px;
 }
+
 .contador {
   font-size: 13px;
   color: var(--color-text-secondary);
@@ -269,6 +277,7 @@ const tiempoTranscurrido = (orden) => {
   align-items: center;
   gap: 6px;
 }
+
 .btn-refrescar {
   padding: 8px 16px;
   background: white;
@@ -281,6 +290,7 @@ const tiempoTranscurrido = (orden) => {
   color: var(--color-text-primary);
   transition: all 0.2s;
 }
+
 .btn-refrescar:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
@@ -293,21 +303,25 @@ const tiempoTranscurrido = (orden) => {
   padding: 48px;
   font-size: 14px;
 }
+
 .empty-state {
   text-align: center;
   padding: 80px 24px;
 }
+
 .empty-icon {
   font-size: 48px;
   margin-bottom: 16px;
   color: var(--color-primary);
 }
+
 .empty-title {
   font-size: 18px;
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0 0 8px;
 }
+
 .empty-sub {
   font-size: 14px;
   color: var(--color-text-secondary);
@@ -336,6 +350,7 @@ const tiempoTranscurrido = (orden) => {
 .card-pendiente {
   border-top-color: var(--color-pendiente);
 }
+
 .card-en_preparacion {
   border-top-color: var(--color-en_preparacion);
 }
@@ -347,16 +362,19 @@ const tiempoTranscurrido = (orden) => {
   align-items: center;
   padding: 14px 16px 8px;
 }
+
 .card-header-left {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .card-num {
   font-size: 16px;
   font-weight: 700;
   color: var(--color-text-primary);
 }
+
 .card-mesa {
   font-size: 13px;
   color: var(--color-text-secondary);
@@ -375,6 +393,7 @@ const tiempoTranscurrido = (orden) => {
   gap: 8px;
   border-bottom: 1px solid var(--color-border);
 }
+
 .card-tiempo {
   margin-left: auto;
   font-size: 11px;
@@ -387,6 +406,7 @@ const tiempoTranscurrido = (orden) => {
   padding: 12px 16px;
   flex: 1;
 }
+
 .card-item {
   display: flex;
   align-items: flex-start;
@@ -395,21 +415,25 @@ const tiempoTranscurrido = (orden) => {
   border-bottom: 1px solid var(--color-border);
   flex-wrap: wrap;
 }
+
 .card-item:last-child {
   border-bottom: none;
 }
+
 .item-cantidad {
   font-size: 13px;
   font-weight: 700;
   color: var(--color-primary);
   min-width: 28px;
 }
+
 .item-nombre {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text-primary);
   flex: 1;
 }
+
 .item-nota {
   width: 100%;
   font-size: 11px;
@@ -431,6 +455,7 @@ const tiempoTranscurrido = (orden) => {
   color: #92400E;
   border: 1px solid #FDE68A;
 }
+
 .notas-label {
   font-weight: 700;
   margin-right: 4px;
@@ -451,6 +476,7 @@ const tiempoTranscurrido = (orden) => {
 .card-acciones {
   padding: 12px 16px;
 }
+
 .btn-preparar {
   width: 100%;
   padding: 12px;
@@ -464,10 +490,12 @@ const tiempoTranscurrido = (orden) => {
   cursor: pointer;
   transition: all 0.2s;
 }
+
 .btn-preparar:hover {
   background: var(--color-en_preparacion);
   color: white;
 }
+
 .btn-listo {
   width: 100%;
   padding: 12px;
@@ -481,9 +509,11 @@ const tiempoTranscurrido = (orden) => {
   cursor: pointer;
   transition: opacity 0.2s;
 }
+
 .btn-listo:hover {
   opacity: 0.9;
 }
+
 .inline-icon {
   flex-shrink: 0;
 }
@@ -495,10 +525,12 @@ const tiempoTranscurrido = (orden) => {
   font-size: 11px;
   font-weight: 700;
 }
+
 .estado-pendiente {
   background: #FEF2F2;
   color: var(--color-pendiente);
 }
+
 .estado-en_preparacion {
   background: #FFFBEB;
   color: #92400E;
@@ -511,11 +543,13 @@ const tiempoTranscurrido = (orden) => {
   font-size: 13px;
   margin-bottom: 20px;
 }
+
 .alert-success {
   background: #ECFDF5;
   color: var(--color-listo);
   border: 1px solid #A7F3D0;
 }
+
 .alert-error {
   background: #FEF2F2;
   color: var(--color-pendiente);

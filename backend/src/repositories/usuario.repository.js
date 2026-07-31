@@ -40,6 +40,11 @@ const usuarioRepository = {
   // Desactivar cuenta (soft delete)
   desactivar: async (id) => {
     return await Usuario.update({ activo: false }, { where: { id } });
+  },
+
+  // Activar cuenta
+  activar: async (id) => {
+    return await Usuario.update({ activo: true }, { where: { id } });
   }
 };
 

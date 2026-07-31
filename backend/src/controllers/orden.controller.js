@@ -1,6 +1,9 @@
+// Capa 1 — Controlador de órdenes
+
 const ordenService = require('../services/orden.service');
 
 const ordenController = {
+
   // GET /api/ordenes — admin ve todas, mesero solo las suyas
   listar: async (req, res) => {
     try {
