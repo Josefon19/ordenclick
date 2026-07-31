@@ -1,21 +1,14 @@
 import api from './api';
 
-export const getOrdenes = () => {
-  return api.get('/ordenes');
+const ordenService = {
+  listar: () => api.get('/ordenes'),
+  obtener: (id) => api.get(`/ordenes/${id}`),
+  crear: (datos) => api.post('/ordenes', datos),
+  actualizarEstado: (id, estado) =>
+    api.patch(`/ordenes/${id}/estado`, { estado }),
+  pagar: (id, metodo_pago) =>
+    api.patch(`/ordenes/${id}/pagar`, { metodo_pago }),
+  listarActivas: () => api.get('/ordenes/cocina/activas')
 };
 
-export const getOrden = (id) => {
-  return api.get(`/ordenes/${id}`);
-};
-
-export const createOrden = (orden, detalles) => {
-  return api.post('/ordenes', { orden, detalles });
-};
-
-export const updateOrden = (id, orden) => {
-  return api.put(`/ordenes/${id}`, orden);
-};
-
-export const updateDetalle = (id, detalle) => {
-  return api.put(`/ordenes/detalles/${id}`, detalle);
-};
+export default ordenService;
