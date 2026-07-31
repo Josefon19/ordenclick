@@ -85,6 +85,20 @@ const ordenService = {
       await transaction.rollback();
       throw error;
     }
+
+    const orden = await ordenRepository.crear({
+      mesa_id,
+      mesero_id,
+      estado: 'pendiente',
+      total,
+      notas_generales: notas_generales || null
+    });
+
+    await ordenDetalleRepository.crearMultiples(
+      detalles.map((detalle) => ({ ...detalle, orden_id: orden.id }))
+    );
+
+    return ordenRepository.buscarPorId(orden.id);
   },
 
   actualizarEstado: async (id, nuevoEstado, rol) => {
