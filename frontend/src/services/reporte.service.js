@@ -1,5 +1,11 @@
 import api from './api';
 
-export const getReporteVentas = (fechaInicio, fechaFin) => {
-  return api.get('/reportes/ventas', { params: { fechaInicio, fechaFin } });
+const reporteService = {
+  resumenHoy: () => api.get('/reportes/hoy'),
+  topPlatillos: () => api.get('/reportes/top-platillos'),
+  historial: (tipo, valor) =>
+    api.get('/reportes/historial', { params: { tipo, valor } }),
+  buscar: (q) => api.get('/reportes/buscar', { params: { q } })
 };
+
+export default reporteService;
