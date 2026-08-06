@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api'
+  // ✅ Lee la variable de entorno de Render si existe; si no, usa localhost
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 });
 
 api.interceptors.request.use(
