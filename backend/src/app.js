@@ -24,7 +24,7 @@ app.use('/api/platillos', platilloRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/mesas', mesaRoutes);
 app.use('/api/ordenes', ordenRoutes);
-app.use('/api/reportes', verificarToken, reporteRoutes);
+app.use('/api/reportes', reporteRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

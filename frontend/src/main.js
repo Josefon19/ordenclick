@@ -10,11 +10,12 @@ import { BiCreditCard } from 'oh-vue-icons/icons/bi';
 import App from './App.vue';
 import router from './router';
 import './assets/main.css';
-
+import { FaMoneyBillAlt } from 'oh-vue-icons/icons/fa';
+import { BiCreditCardFill } from 'oh-vue-icons/icons/bi';
 // Agregar íconos
 addIcons(
   MdRestaurant, MdVisibility, MdVisibilityoff, MdWarning,
-  MdRefresh, MdAccesstime, MdNotes, MdPerson, MdDone, FaMoneyBillWaveAlt, BiCreditCard
+  MdRefresh, MdAccesstime, MdNotes, MdPerson, MdDone, FaMoneyBillWaveAlt, FaMoneyBillAlt, BiCreditCardFill, BiCreditCard      
 );
 
 const app = createApp(App);

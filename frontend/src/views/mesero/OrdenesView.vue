@@ -152,11 +152,11 @@
           <p class="pago-total">Total: <strong>${{ modalPago.total }}</strong></p>
           <div class="metodos-pago">
             <button :class="['metodo-btn', modalPago.metodo==='efectivo' ? 'metodo-btn--active':'']"
-              @click="modalPago.metodo='efectivo'"
-            >💵 Efectivo</button>
+              @click="modalPago.metodo='efectivo'" 
+            > Efectivo</button>
             <button :class="['metodo-btn', modalPago.metodo==='tarjeta' ? 'metodo-btn--active':'']"
-              @click="modalPago.metodo='tarjeta'"
-            >💳 Tarjeta</button>
+              @click="modalPago.metodo='tarjeta'" 
+            > Tarjeta</button>
           </div>
         </div>
         <div class="modal-footer">

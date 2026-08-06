@@ -1,5 +1,4 @@
 // Middleware de control de acceso por rol
-// Se usa después de verificarToken en las rutas que lo requieran
 // Uso: verificarRol('administrador') o verificarRol('administrador', 'mesero')
 
 const verificarRol = (...rolesPermitidos) => {
