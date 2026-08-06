@@ -8,13 +8,20 @@ const sequelize = new Sequelize(
   process.env.DB_PASSWORD,
   {
     host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    port: process.env.DB_PORT || 4000,
     dialect: 'mysql',
     logging: false,
     define: {
       charset: 'utf8mb4',
       collate: 'utf8mb4_unicode_ci',
       underscored: true,
+    },
+    // 🔒 REQUERIDO PARA TIDB CLOUD: Configuración de SSL
+    dialectOptions: {
+      ssl: {
+        minVersion: 'TLSv1.2',
+        rejectUnauthorized: true,
+      },
     },
     pool: {
       max: 10,
@@ -28,7 +35,7 @@ const sequelize = new Sequelize(
 const conectarDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log('✅ Conexión a MySQL establecida correctamente.');
+    console.log('✅ Conexión a MySQL/TiDB establecida correctamente.');
   } catch (error) {
     console.error('❌ No se pudo conectar a la base de datos:', error.message);
     process.exit(1);
